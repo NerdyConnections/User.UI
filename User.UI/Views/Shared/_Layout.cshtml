@@ -9,44 +9,6 @@
     <link rel="stylesheet" href="~/User.UI.styles.css" asp-append-version="true" />
      <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
-   <script>
-
-    
-    function Edit(objUser){
-        $('#txtFirstName').val(objUser.FirstName);
-        $('#txtLastName').val(objUser.LastName);
-        $('#txtPhone').val(objUser.Phone);
-        $('#txtAge').val(objUser.Age);
-
-
-    }
-     function Delete(objUser){
-        // $.Delete("/Users/" + objUser.Id, function() {
-        //     alert('Deleted');
-        //     ReloadGrid();
-
-        // });
-        //$('#txtFirstName').val(objUser.FirstName);
-        //$('#txtLastName').val(objUser.LastName);
-        //$('#txtPhone').val(objUser.Phone);
-        //$('#txtAge').val(objUser.Age);
-
-
-    }
-    function Reset(){
-
-        $("#txtFirstName").val("");
-          $("#txtLastName").val("");
-            $("#txtPhone").val("");
-              $("#txtAge").val("");
-        
-    }
-    function ReloadGrid(){
-        $("tblUsers").DataTable.clear();
-
-         $("tblUsers").DataTable.ajax.reload();
-    }
-    </script>
 </head>
 <body>
     <header>
@@ -84,42 +46,121 @@
    
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
-
+      <script src="~/lib/jquery/dist/jquery.min.js"></script>
        <script src="http://cdn.datatables.net/1.12.1/js/jquery.dataTables.min.js"></script>
 <link href="http://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css" rel="stylesheet"/>
 
 
      <script type="text/javascript">
-    $(document).ready(function(){
+         function Edit(objUser){
+           debugger;
+           console.log("edit user")
+            $('#txtFirstName').val(objUser.firstName);
+              $('#txtLastName').val(objUser.lastName);
+             $('#txtPhone').val(objUser.phone);
+               $('#txtAge').val(objUser.age);
+                $('#ddlDepartment').val(objUser.departmentId);
+       }
+         function Delete(objUser){
+              $.ajax({  
+                    type: 'Delete',  
+                    url: 'http://localhost:5086/users/' + objUser.id,  
+                    dataType: 'json',  
+                    success: function (data) {  
+                        console.log(data);
+                       ReloadGrid();
+                    }  
+  
+                });  
+  
+          
+       }
+    function Reset(){
 
+        $("#txtFirstName").val("");
+          $("#txtLastName").val("");
+            $("#txtPhone").val("");
+              $("#txtAge").val("");
+           $("#ddlDepartment").val("-1");
+    }
+    function ReloadGrid(){
+      //  $('#tblUsers').DataTable.clear();
+        dataTable.ajax.reload();
+       //  $('#tblUsers').DataTable.ajax.reload();
+    }
+    $(document).ready(function(){
+       
         $('#btnSave').click(function(){
-            var User={
-                FirstName:$('#txtFirstName').val(),
+
+            
+            var objUser={
+               /* FirstName:$('#txtFirstName').val(),
                 LastName:$('#txtLastName').val(),
                 Phone:$('#txtPhone').val(),
                 Age:$('#txtAge').val(),
+                 DepartmentId:$('#ddlDepartment').val()*/
 
-            };
-            $.post("/Users",{AddUserModelDTO: User})
-            .done(function(data){
-                Reset();
+                  firstName:$('#txtFirstName').val(),
+                lastName:$('#txtLastName').val(),
+                phone:$('#txtPhone').val(),
+                age:$('#txtAge').val(),
+                 departmentId:$('#ddlDepartment').val(),
+                 dateCreated: '2022-07-29',
+                 createdBy: 'Anatoly',
+                 lastModifiedDate: '2022-07-29',
+                 lastModifiedBy: 'Anatoly'
+
+
+            }
+           
+                $.ajax({
+                type: "POST",
+                url: 'http://localhost:5086/Users',
+                data:  JSON.stringify(objUser),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+
+                  ReloadGrid();
+                },
+                error: function () {
+
+                }
+            });
+         /*   $.post("http://localhost:5086/Users", data{
+    "firstName": "Awesome",
+    "lastName": "King",
+    "age": 36,
+    "phone": "6474698985",
+    "departmentId": 2,
+   
+   
+    "dateCreated": "2001-12-01T00:00:00",
+    "createdBy": "Anatoly",
+    "lastModifiedDate": "2011-12-01T00:00:00",
+    "lastModifiedBy": "Tom"
+})
+            .done(function(data) {
                 ReloadGrid();
-                alert("saved");
-
-            })
+            });
+        */
+       
         });
         
-      
+       
+        
       
          $('#btnAddNew').click(function(){
              Reset();
          });
 
     
-        $('#tblUsers').DataTable({
+        dataTable = $('#tblUsers').DataTable({
             "ajax":{
                 "url": 'http://localhost:5086/Users',
+                "dataSrc": "",
                 "type":"Get",
+                 "filter": true,
                 "datatype": "json"
 
 
@@ -127,16 +168,17 @@
             },
             columns: [
 
-                {data: "FirstName"},
-                 {data: "LastName"},
-                  {data: "Age"},
-                   {data: "Phone"},
+                {data: "firstName", "searchable": true},
+                 {data: "lastName", "searchable": true},
+                  {data: "age", "searchable": true},
+                   {data: "phone", "searchable": true},
+                    {data: "department.departmentName"},
                    {
                        data: "Id",render: function(data,type,row,meta)
                        {
 
                            return "<button class='btn btn-primary' style='margin-right:5px;' onclick=Edit(" + JSON.stringify(row) + ") >Edit</button>"+
-                           "<button class='btn btn-primary' style='margin-right:5px;' onclick=Delete(" + JSON.stringify(row) + ")>Delete</button>";
+                           "<button class='btn btn-danger' style='margin-right:5px;' onclick=Delete(" + JSON.stringify(row) + ")>Delete</button>";
                        }
 
                    }
